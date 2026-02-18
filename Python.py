@@ -1,38 +1,40 @@
 import streamlit as st
 from gtts import gTTS
 import base64
+import os
 
-# Configuração da Página
-st.set_page_config(page_title="Kids English Talk", page_icon="🌟")
+# Título do App no Navegador
+st.set_page_config(page_title="Kids English App", page_icon="🎤")
 
-st.title("🌟 English for Kids: Talk Time!")
-st.write("Ouve a frase e pratica a tua pronúncia!")
+st.title("🎤 English for Kids")
+st.write("Pratica a tua pronúncia e vê a frase ficar verde!")
 
-# --- Escopo das 4 Frases ---
+# Lista de frases
 frases = ["hello how are you", "i like apples", "the sky is blue", "see you later"]
 
-def gerar_audio(texto):
-    """Gera áudio que o navegador consegue reproduzir."""
-    tts = gTTS(text=texto, lang='en')
-    tts.save("audio.mp3")
-    with open("audio.mp3", "rb") as f:
+def play_audio(text):
+    tts = gTTS(text=text, lang='en')
+    tts.save("speech.mp3")
+    with open("speech.mp3", "rb") as f:
         data = f.read()
-    b64 = base64.b64encode(data).decode()
-    md = f'<audio controls><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>'
-    st.markdown(md, unsafe_allow_html=True)
+        b64 = base64.b64encode(data).decode()
+        md = f'<audio autoplay="true" src="data:audio/mp3;base64,{b64}">'
+        st.markdown(md, unsafe_allow_html=True)
 
-# Interface de Utilizador
-for i, frase in enumerate(frases, 1):
-    with st.expander(f"Lição {i}: {frase.upper()}", expanded=(i==1)):
-        st.write("1. Ouve a pronúncia correta:")
-        if st.button(f"Ouvir Frase {i}", key=f"btn_{i}"):
-            gerar_audio(frase)
-        
-        st.write("2. Escreve o que ouviste para treinar a escrita (ou usa o microfone do teclado):")
-        entrada = st.text_input("Escreve aqui:", key=f"input_{i}").lower().strip()
-        
-        if entrada == frase:
-            st.success("CORRECT! Ficou Verde! ✅")
-            st.balloons() # Efeito visual de festa!
-        elif entrada != "":
-            st.error("Tenta outra vez! 💪")
+# Interface do App
+for i, frase_alvo in enumerate(frases):
+    st.subheader(f"Frase {i+1}")
+    st.info(frase_alvo.upper())
+    
+    if st.button(f"Ouvir Pronúncia {i+1}"):
+        play_audio(frase_alvo)
+    
+    # Na Web, o input de texto é o mais seguro para crianças
+    # Se quiseres microfone real na web, usamos um plugin chamado 'streamlit-webrtc'
+    resposta = st.text_input(f"Escreve ou dita a frase {i+1}:", key=f"input_{i}").lower().strip()
+    
+    if resposta == frase_alvo:
+        st.success("EXCELENTE! Ficou Verde! ✅")
+        st.balloons()
+    elif resposta != "":
+        st.error("Tenta outra vez! 💪")
