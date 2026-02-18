@@ -1,0 +1,4 @@
+gtts
+SpeechRecognition
+colorama
+pygame
